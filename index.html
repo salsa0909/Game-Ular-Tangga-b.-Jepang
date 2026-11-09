@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ular Tangga Bahasa Jepang - Sugoroku Kana</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel untuk membaca JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+</head>
+<body class="bg-[#FAF7EE] text-stone-900 font-sans">
+  <div id="root"></div>selamat 
+
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+
+    // DATA HURUF & KOSAKATA JEPANG
+    const HIRAGANA_DATA = [
+      { kana: 'あ', romaji: 'a' }, { kana: 'い', romaji: 'i' }, { kana: 'う', romaji: 'u' }, { kana: 'え', romaji: 'e' }, { kana: 'お', romaji: 'o' },
+      { kana: 'か', romaji: 'ka' }, { kana: 'き', romaji: 'ki' }, { kana: 'く', romaji: 'ku' }, { kana: 'け', romaji: 'ke' }, { kana: 'こ', romaji: 'ko' },
+      { kana: 'さ', romaji: 'sa' }, { kana: 'し', romaji: 'shi' }, { kana: 'す', romaji: 'su' }, { kana: 'せ', romaji: 'se' }, { kana: 'そ', romaji: 'so' },
+      { kana: 'た', romaji: 'ta' }, { kana: 'ち', romaji: 'chi' }, { kana: 'つ', romaji: 'tsu' }, { kana: 'て', romaji: 'te' }, { kana: 'と', romaji: 'to' },
+      { kana: 'な', romaji: 'na' }, { kana: 'に', romaji: 'ni' }, { kana: 'ぬ', romaji: 'nu' }, { kana: 'ね', romaji: 'ne' }, { kana: 'の', romaji: 'no' },
+      { kana: 'は', romaji: 'ha' }, { kana: 'ひ', romaji: 'hi' }, { kana: 'ふ', romaji: 'fu' }, { kana: 'へ', romaji: 'he' }, { kana: 'ほ', romaji: 'ho' },
+      { kana: 'ま', romaji: 'ma' }, { kana: 'み', romaji: 'mi' }, { kana: 'む', romaji: 'mu' }, { kana: 'め', romaji: 'me' }, { kana: 'も', romaji: 'mo' },
+      { kana: 'や', romaji: 'ya' }, { kana: 'ゆ', romaji: 'yu' }, { kana: 'よ', romaji: 'yo' },
+      { kana: 'ら', romaji: 'ra' }, { kana: 'り', romaji: 'ri' }, { kana: 'る', romaji: 'ru' }, { kana: 'れ', romaji: 're' }, { kana: 'ro', romaji: 'ro' },
+      { kana: 'わ', romaji: 'wa' }, { kana: 'を', romaji: 'wo' }, { kana: 'ん', romaji: 'n' },
+    ];
+
+    const KATAKANA_DATA = [
+      { kana: 'ア', romaji: 'a' }, { kana: 'イ', romaji: 'i' }, { kana: 'ウ', romaji: 'u' }, { kana: 'エ', romaji: 'e' }, { kana: 'オ', romaji: 'o' },
+      { kana: 'カ', romaji: 'ka' }, { kana: 'キ', romaji: 'ki' }, { kana: 'ク', romaji: 'ku' }, { kana: 'ケ', romaji: 'ke' }, { kana: 'コ', romaji: 'ko' },
+      { kana: 'サ', romaji: 'sa' }, { kana: 'シ', romaji: 'shi' }, { kana: 'ス', romaji: 'su' }, { kana: 'セ', romaji: 'se' }, { kana: 'ソ', romaji: 'so' },
+      { kana: 'タ', romaji: 'ta' }, { kana: 'チ', romaji: 'chi' }, { kana: 'ツ', romaji: 'tsu' }, { kana: 'テ', romaji: 'te' }, { kana: 'ト', romaji: 'to' },
+      { kana: 'ナ', romaji: 'na' }, { kana: 'ニ', romaji: 'ni' }, { kana: 'ヌ', romaji: 'nu' }, { kana: 'ネ', romaji: 'ne' }, { kana: 'ノ', romaji: 'no' },
+      { kana: 'ハ', romaji: 'ha' }, { kana: 'ヒ', romaji: 'hi' }, { kana: 'フ', romaji: 'fu' }, { kana: 'ヘ', romaji: 'he' }, { kana: 'ホ', romaji: 'ho' },
+      { kana: 'マ', romaji: 'ma' }, { kana: 'ミ', romaji: 'mi' }, { kana: 'ム', romaji: 'mu' }, { kana: 'メ', romaji: 'me' }, { kana: 'モ', romaji: 'mo' },
+      { kana: 'ヤ', romaji: 'ya' }, { kana: 'ユ', romaji: 'yu' }, { kana: 'ヨ', romaji: 'yo' },
+       kana: 'ラ', romaji: 'ra' }, { kana: 'リ', romaji: 'ri' }, { kana: 'ル', romaji: 'ru' }, { kana: 'レ', romaji: 're' }, { kana: 'ロ', romaji: 'ro' },
+      { kana: 'ワ', romaji: 'wa' }, { kana: 'ヲ', romaji: 'wo' }, { kana: 'ン', romaji: 'n' }
+    ];
+
+    const VOCAB_DATA = [
+      { word: 'ねこ', romaji: 'neko', meaning: 'Kucing' },
+      { word: 'いぬ', romaji: 'inu', meaning: 'Anjing' },
+      { word: 'とり', romaji: 'tori', meaning: 'Burung' },
+      { word: 'さくら', romaji: 'sakura', meaning: 'Bunga Sakura' },
+      { word: 'やま', romaji: 'yama', meaning: 'Gunung' },
+      { word: 'みず', romaji: 'mizu', meaning: 'Air' },
+      { word: 'ほん', romaji: 'hon', meaning: 'Buku' },
+      { word: 'パン', romaji: 'pan', meaning: 'Roti' },
+      { word: 'カメラ', romaji: 'kamera', meaning: 'Kamera' },
+      { word: 'テレビ', romaji: 'terebi', meaning: 'Televisi' },
+      { word: 'すし', romaji: 'sushi', meaning: 'Sushi' },
+    ];
+
+    // TANGGA & ULAR
+    const LADDERS = [
+      { start: 4, end: 14 }, { start: 9, end: 31 }, { start: 20, end: 38 },
+      { start: 28, end: 84 }, { start: 40, end: 59 }, { start: 51, end: 67 },
+      { start: 63, end: 81 }, { start: 71, end: 91 }
+    ];
+    const SNAKES = [
+      { start: 17, end: 7 }, { start: 54, end: 34 }, { start: 62, end: 18 },
+      { start: 64, end: 60 }, { start: 87, end: 24 }, { start: 93, end: 73 },
+      { start: 95, end: 75 }, { start: 98, end: 79 }
+    ];
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function generateQuestion() {
+      const r = Math.random();
+      if (r < 0.4) {
+        const target = HIRAGANA_DATA[Math.floor(Math.random() * HIRAGANA_DATA.length)];
+        const others = shuffle(HIRAGANA_DATA.filter(k => k.romaji !== target.romaji).map(k => k.romaji)).slice(0, 3);
+        const options = shuffle([target.romaji, ...others]);
+        return { prompt: target.kana, type: 'Hiragana', text: 'Bagaimana cara membaca huruf Hiragana ini?', options, correct: options.indexOf(target.romaji), exp: `Huruf 「${target.kana}」 dibaca "${target.romaji}".` };
+      } else if (r < 0.8) {
+        const target = KATAKANA_DATA[Math.floor(Math.random() * KATAKANA_DATA.length)];
+        const others = shuffle(KATAKANA_DATA.filter(k => k.romaji !== target.romaji).map(k => k.romaji)).slice(0, 3);
+        const options = shuffle([target.romaji, ...others]);
+        return { prompt: target.kana, type: 'Katakana', text: 'Bagaimana cara membaca huruf Katakana ini?', options, correct: options.indexOf(target.romaji), exp: `Huruf 「${target.kana}」 dibaca "${target.romaji}".` };
+      } else {
+        const target = VOCAB_DATA[Math.floor(Math.random() * VOCAB_DATA.length)];
+        const others = shuffle(VOCAB_DATA.filter(v => v.meaning !== target.meaning).map(v => v.meaning)).slice(0, 3);
+        const options = shuffle([target.meaning, ...others]);
+        return { prompt: target.word, type: 'Kosakata', text: `Apa arti dari kosakata 「${target.word}」 (${target.romaji})?`, options, correct: options.indexOf(target.meaning), exp: `「${target.word}」 (${target.romaji}) artinya "${target.meaning}".` };
+      }
+    }
+
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'ja-JP';
+        window.speechSynthesis.speak(u);
+      }
+    }
+
+    function App() {
+      const [screen, setScreen] = useState('MENU');
+      const [p1, setP1] = useState({ name: 'Kitsune', pos: 1, correct: 0 });
+      const [p2, setP2] = useState({ name: 'Tanuki', pos: 1, correct: 0 });
+      const [activeP, setActiveP] = useState(1);
+      const [dice, setDice] = useState(1);
+      const [phase, setPhase] = useState('IDLE'); // IDLE, ROLLING, QUIZ, WIN
+      const [quiz, setQuiz] = useState(null);
+      const [selectedAns, setSelectedAns] = useState(null);
+      const [answered, setAnswered] = useState(false);
+      const [eventMsg, setEventMsg] = useState('Selamat bermain!');
+      const [showKana, setShowKana] = useState(false);
+
+      const rollDice = () => {
+        if (phase !== 'IDLE') return;
+        setPhase('ROLLING');
+        const interval = setInterval(() => setDice(Math.floor(Math.random() * 6) + 1), 70);
+        setTimeout(() => {
+          clearInterval(interval);
+          const finalVal = Math.floor(Math.random() * 6) + 1;
+          setDice(finalVal);
+          const q = generateQuestion();
+          setQuiz(q);
+          setSelectedAns(null);
+          setAnswered(false);
+          setPhase('QUIZ');
+        }, 600);
+      };
+
+      const handleAnswer = (idx) => {
+        if (answered) return;
+        setSelectedAns(idx);
+        setAnswered(true);
+        speakText(quiz.prompt);
+        const isRight = idx === quiz.correct;
+
+        if (isRight) {
+          if (activeP === 1) setP1(p => ({ ...p, correct: p.correct + 1 }));
+          else setP2(p => ({ ...p, correct: p.correct + 1 }));
+        }
+
+        setTimeout(() => {
+          setPhase('IDLE');
+          setQuiz(null);
+          if (isRight) {
+            movePlayer(activeP, dice);
+          } else {
+            setEventMsg(`❌ Salah! ${activeP === 1 ? p1.name : p2.name} tetap di tempat.`);
+            setActiveP(p => p === 1 ? 2 : 1);
+          }
+        }, 1600);
+      };
+
+      const movePlayer = (playerId, steps) => {
+        const curPlayer = playerId === 1 ? p1 : p2;
+        const newPos = Math.min(100, curPlayer.pos + steps);
+
+        // Cek Menang
+        if (newPos >= 100) {
+          if (playerId === 1) setP1(p => ({ ...p, pos: 100 }));
+          else setP2(p => ({ ...p, pos: 100 }));
+          setPhase('WIN');
+          confetti({ particleCount: 100, spread: 70 });
+          return;
+        }
+
+        // Cek Tangga & Ular
+        const ladder = LADDERS.find(l => l.start === newPos);
+        const snake = SNAKES.find(s => s.start === newPos);
+        let finalPos = newPos;
+
+        if (ladder) {
+          finalPos = ladder.end;
+          setEventMsg(`🪜 Hebat! ${curPlayer.name} naik tangga dari ${ladder.start} ke ${ladder.end}!`);
+        } else if (snake) {
+          finalPos = snake.end;
+          setEventMsg(`🐍 Ups! ${curPlayer.name} terkena ular di ${snake.start} turun ke ${snake.end}!`);
+        } else {
+          setEventMsg(`✅ ${curPlayer.name} maju ${steps} petak ke nomor ${finalPos}.`);
+        }
+
+        if (playerId === 1) setP1(p => ({ ...p, pos: finalPos }));
+        else setP2(p => ({ ...p, pos: finalPos }));
+
+        if (finalPos >= 100) {
+          setPhase('WIN');
+          confetti({ particleCount: 100, spread: 70 });
+        } else {
+          setActiveP(p => p === 1 ? 2 : 1);
+        }
+      };
+
+      // Grid Papan
+      const rows = [];
+      for (let r = 9; r >= 0; r--) {
+        const row = [];
+        const isEven = r % 2 === 0;
+        for (let c = 0; c < 10; c++) row.push(isEven ? r * 10 + c + 1 : r * 10 + (9 - c) + 1);
+        rows.push(row);
+      }
+
+      return (
+        <div className="min-h-screen max-w-4xl mx-auto p-4 flex flex-col justify-between">
+          {screen === 'MENU' ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <div className="bg-white p-8 rounded-3xl shadow-xl border-4 border-amber-900/30 max-w-md w-full">
+                <span className="text-4xl">⛩️</span>
+                <h1 className="text-2xl font-bold mt-2">Ular Tangga Bahasa Jepang</h1>
+                <p className="text-xs text-amber-800 mb-6">Sugoroku Kana (Hiragana, Katakana & Kosakata)</p>
+
+                <div className="space-y-3 mb-6 text-left text-xs font-semibold">
+                  <div>
+                    <label className="text-red-600 block mb-1">🦊 Pemain 1</label>
+                    <input className="w-full p-2 border rounded-lg" value={p1.name} onChange={e => setP1({...p1, name: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="text-blue-600 block mb-1">🍃 Pemain 2</label>
+                    <input className="w-full p-2 border rounded-lg" value={p2.name} onChange={e => setP2({...p2, name: e.target.value})} />
+                  </div>
+                </div>
+
+                <button onClick={() => setScreen('PLAYING')} className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-xl shadow cursor-pointer">
+                  Mulai Bermain
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              {/* Header */}
+              <div className="flex justify-between items-center p-3 bg-white rounded-2xl shadow mb-2">
+                <span className="font-bold text-sm">⛩️ Ular Tangga Jepang</span>
+                <div className="flex gap-2">
+                  <button onClick={() => setShowKana(true)} className="px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-lg">Tabel Kana</button>
+                  <button onClick={() => setScreen('MENU')} className="px-3 py-1 bg-stone-200 text-xs font-bold rounded-lg">Menu</button>
+                </div>
+              </div>
+
+              {/* Status Pemain */}
+              <div className="grid grid-cols-2 gap-2 mb-2 text-xs font-bold">
+                <div className={`p-2 rounded-xl border ${activeP === 1 ? 'bg-red-50 border-red-500' : 'bg-white opacity-70'}`}>
+                  <p className="text-red-600">🦊 {p1.name} {activeP === 1 && '(GILIRAN)'}</p>
+                  <p className="text-stone-500 font-mono">Petak: {p1.pos}/100 · Benar: {p1.correct}</p>
+                </div>
+                <div className={`p-2 rounded-xl border ${activeP === 2 ? 'bg-blue-50 border-blue-500' : 'bg-white opacity-70'}`}>
+                  <p className="text-blue-600">🍃 {p2.name} {activeP === 2 && '(GILIRAN)'}</p>
+                  <p className="text-stone-500 font-mono">Petak: {p2.pos}/100 · Benar: {p2.correct}</p>
+                </div>
+              </div>
+
+              <div className="text-center text-xs p-1 bg-stone-200 rounded-lg mb-2">{eventMsg}</div>
+
+              {/* Papan 10x10 */}
+              <div className="max-w-[480px] aspect-square mx-auto bg-stone-900 p-2 rounded-2xl shadow-xl">
+                <div className="w-full h-full bg-[#FAF7EE] grid grid-cols-10 grid-rows-10 border border-stone-400 relative">
+                  {rows.flat().map(n => {
+                    const hasLadder = LADDERS.find(l => l.start === n);
+                    const hasSnake = SNAKES.find(s => s.start === n);
+                    const isP1Here = p1.pos === n;
+                    const isP2Here = p2.pos === n;
+
+                    return (
+                      <div key={n} className="border border-stone-200 p-0.5 flex flex-col justify-between relative text-[8px] font-mono">
+                        <span>{n}</span>
+                        {hasLadder && <span className="text-[6px] text-amber-700 font-bold">🪜→{hasLadder.end}</span>}
+                        {hasSnake && <span className="text-[6px] text-rose-700 font-bold">🐍→{hasSnake.end}</span>}
+
+                        <div className="absolute inset-0 flex items-center justify-center gap-0.5 pointer-events-none">
+                          {isP1Here && <span className="w-4 h-4 rounded-full bg-red-600 text-white text-[9px] flex items-center justify-center">🦊</span>}
+                          {isP2Here && <span className="w-4 h-4 rounded-full bg-blue-600 text-white text-[9px] flex items-center justify-center">🍃</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Lempar Dadu */}
+              <div className="flex flex-col items-center gap-2 mt-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white border-2 border-stone-300 rounded-xl flex items-center justify-center text-2xl font-bold font-mono shadow">
+                    {dice}
+                  </div>
+                  <button
+                    onClick={rollDice}
+                    disabled={phase !== 'IDLE'}
+                    className="px-6 py-2.5 bg-red-600 hover:bg-red-500 disabled:bg-stone-400 text-white font-bold rounded-xl shadow cursor-pointer"
+                  >
+                    {phase === 'ROLLING' ? 'Mengocok...' : '🎲 Lempar Dadu'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Kuis */}
+          {quiz && phase === 'QUIZ' && (
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+              <div className="bg-white p-6 rounded-3xl max-w-sm w-full text-center shadow-2xl">
+                <span className="text-xs text-stone-500 font-bold uppercase">{quiz.type}</span>
+                <p className="text-sm font-semibold my-2">{quiz.text}</p>
+                <div className="w-20 h-20 bg-amber-50 mx-auto rounded-2xl flex items-center justify-center text-4xl font-bold my-3 border">
+                  {quiz.prompt}
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  {quiz.options.map((opt, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleAnswer(i)}
+                      disabled={answered}
+                      className={`p-2.5 rounded-xl border text-xs font-semibold cursor-pointer ${
+                        answered
+                          ? i === quiz.correct
+                            ? 'bg-emerald-100 border-emerald-500 text-emerald-800'
+                            : selectedAns === i
+                            ? 'bg-rose-100 border-rose-500 text-rose-800'
+                            : 'opacity-40'm
+                          : 'hover:bg-amber-50'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+                {answered && (
+                  <p className="mt-3 text-xs font-bold text-stone-700">{quiz.exp}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Modal Menang */}
+          {phase === 'WIN' && (
+            <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+              <div className="bg-white p-6 rounded-3xl max-w-xs w-full text-center shadow-2xl">
+                <span className="text-4xl">🏆</span>
+                <h2 className="text-xl font-bold mt-2">{p1.pos >= 100 ? p1.name : p2.name} Menang!</h2>
+                <p className="text-xs text-stone-500 my-3">Berhasil mencapai petak 100!</p>
+                <button onClick={() => { setP1({...p1, pos: 1}); setP2({...p2, pos: 1}); setPhase('IDLE'); }} className="w-full py-2 bg-red-600 text-white font-bold rounded-xl">
+                  Main Lagi
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Tabel Kana */}
+          {showKana && (
+            <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+              <div className="bg-white p-5 rounded-2xl max-w-md w-full max-h-[80vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="font-bold text-sm">Tabel Hiragana & Katakana</h3>
+                  <button onClick={() => setShowKana(false)} className="text-sm font-bold">✕</button>
+                </div>
+                <div className="grid grid-cols-5 gap-2 text-center text-xs">
+                  {HIRAGANA_DATA.slice(0, 46).map(k => (
+                    <div key={k.kana} onClick={() => speakText(k.kana)} className="p-2 border rounded hover:bg-amber-50 cursor-pointer">
+                      <span className="text-base font-bold block">{k.kana}</span>
+                      <span className="text-stone-400">{k.romaji}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+  </html>
